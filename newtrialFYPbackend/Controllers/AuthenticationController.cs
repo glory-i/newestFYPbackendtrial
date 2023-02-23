@@ -18,8 +18,8 @@ namespace newtrialFYPbackend.Controllers
             _authenticationServices = authenticationServices;
         }
 
-        [HttpPost("SignUp")]
-        public async Task<ActionResult<ApiResponse>> Register(RegisterModel registerModel)
+        [HttpPost("SignUpUseless")]
+        public async Task<ActionResult<ApiResponse>> Register(ValidateModel registerModel)
         {
 
             var response = await _authenticationServices.RegisterUser(registerModel);
@@ -34,8 +34,24 @@ namespace newtrialFYPbackend.Controllers
 
         }
 
+        [HttpPost("SignUp")]
+        public async Task<ActionResult<ApiResponse>> SignUp(SignUpModel signUpModel)
+        {
+
+            var response = await _authenticationServices.SignUpUser(signUpModel);
+            if (response.Message == ApiResponseEnum.success.ToString())
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+
+        }
+
         [HttpPost("Validate")]
-        public async Task<ActionResult<ApiResponse>> CheckValidations(RegisterModel registerModel)
+        public async Task<ActionResult<ApiResponse>> CheckValidations(ValidateModel registerModel)
         {
 
             var response = await _authenticationServices.CheckValidations(registerModel);
@@ -79,6 +95,16 @@ namespace newtrialFYPbackend.Controllers
             {
                 return BadRequest(response);
             }
+
+        }
+
+
+        [HttpPost("CalculateCalorieRequirements")]
+        public async Task<ActionResult<ApiResponse>> CalculateRequirements(CalculateCalorieRequirementsModel model)
+        {
+
+            var response = await _authenticationServices.CalculateCalorieRequirements(model);
+            return Ok(response);
 
         }
 

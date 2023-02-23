@@ -48,7 +48,7 @@ namespace newtrialFYPbackend.Services.Implementation
 
 
         //REMEMBER TO CHANGE THIS
-        public async Task<ApiResponse> RegisterUser(RegisterModel model)
+        public async Task<ApiResponse> RegisterUser(ValidateModel model)
         {
             //create the "user" role
             await CreateRoles();
@@ -92,6 +92,9 @@ namespace newtrialFYPbackend.Services.Implementation
 
             };
            
+
+
+
             /*
             //create user and add the "user" role.
             var result = await userManager.CreateAsync(user, model.Password);
@@ -126,7 +129,7 @@ namespace newtrialFYPbackend.Services.Implementation
         }
 
 
-        public async Task<ApiResponse> CheckValidations(RegisterModel model)
+        public async Task<ApiResponse> CheckValidations(ValidateModel model)
         {
             ReturnedResponse returnedResponse = new ReturnedResponse();
 
@@ -134,7 +137,7 @@ namespace newtrialFYPbackend.Services.Implementation
             await CreateRoles();
 
             //ensure that the email is valid using regular expressions.
-            var validateEmail = await ValidateEmailRegExp(model.Email);
+            var validateEmail = ValidateEmailRegExp(model.Email);
             if (!validateEmail)
             {
                 return returnedResponse.ErrorResponse("Email is Invalid", null);
@@ -156,7 +159,7 @@ namespace newtrialFYPbackend.Services.Implementation
             }
 
             //ensure password meets the validations
-            var validatePassword = await ValidatePassword(model.Password);
+            var validatePassword = ValidatePassword(model.Password);
             if(validatePassword.error != null)
             {
                 return returnedResponse.ErrorResponse(validatePassword.error.message, null);
@@ -177,37 +180,6 @@ namespace newtrialFYPbackend.Services.Implementation
             };
 
             return returnedResponse.CorrectResponse(user);
-
-            /*
-            //create user and add the "user" role.
-            var result = await userManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
-            {
-                ///RETURN A NEW API RESPONSE THAT THE USER WAS NOT CREATED
-
-            }
-            await userManager.AddToRoleAsync(user, UserRoles.User);
-
-            */
-
-
-            //create ACCOUNT instance with additional properties like height,age, gender, etc and save the account to the database.
-            /*Owner owner = new Owner
-            {
-                Username = model.UserName,
-                Email = model.Email,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                DateCreated = DateTime.Now
-            };
-
-            await _context.Owners.AddAsync(owner);
-            */
-
-            /// await _context.SaveChangesAsync();
-
-            ///return new AuthenticationResponse { Status = AuthenticationResponseEnum.Success.GetEnumDescription(), Message = "User Created Succesfully" };
-
 
         }
 
@@ -251,7 +223,7 @@ namespace newtrialFYPbackend.Services.Implementation
 
         }
 
-        public async Task<ApiResponse> ValidatePassword(string password)
+        public ApiResponse ValidatePassword(string password)
         {
 
             string errorMessage = "";
@@ -296,7 +268,7 @@ namespace newtrialFYPbackend.Services.Implementation
             }
         }
 
-        public async Task<bool> ValidateEmailRegExp(string email)
+        public bool ValidateEmailRegExp(string email)
         {
             var validEmail = new Regex("^\\S+@\\S+\\.\\S+$");
             if (validEmail.IsMatch(email))
@@ -424,6 +396,203 @@ namespace newtrialFYPbackend.Services.Implementation
                 return returnedResponse.CorrectResponse("OTP successfully validated");
             }
             return returnedResponse.ErrorResponse("Invalid OTP", null);
+        }
+
+        public async Task<double> CalculateHeight(double h1, double h2, string unit)
+        {
+            //this method is to get the height in cm.
+
+            double height = 0.0;
+            double feetToInches = 12.0;
+            double inchesToCm = 2.54;
+
+            double metersToCm = 100.0;
+
+            //IF height given in feet and inches, convert everything to inches first, then convert to cm by multiplying by 2.54
+            if(unit == HeightUnitEnum.feet.ToString())
+            {
+                double heightInInches = (h1 * feetToInches) + h2;
+                height = heightInInches * inchesToCm;
+            }
+
+            //IF height given in meters and cm,just convert to cm
+            else if (unit == HeightUnitEnum.meters.ToString())
+            {
+                height = (h1 * metersToCm) + h2;
+            }
+
+            return await Task.FromResult(height);
+        }
+
+        public async Task<double> CalculateBMR(CalculateCalorieRequirementsModel model)
+        {
+            //this method is to calculate BMR using the Mifflin St-Jeor Equation.
+
+            //firstly get the height in cm
+            double heightInCm = await CalculateHeight(model.Height1, model.Height2, model.HeightUnit);
+
+
+            //the Mifflin St-Jeor formula is the same for males and females and only differs by the constant added at the end
+            double constantForFemales = -161.0;
+            double constantForMales = +5.0;
+
+            double constant = model.Gender == GenderEnum.Male.GetEnumDescription() ? constantForMales : constantForFemales;
+
+           
+            //mifflin-stJeor formula for calculating BMR
+            double BMR = (10.0 * model.Weight) + (6.25 * heightInCm) - (5.0 * model.Age) + constant;
+            
+            
+            //round to 2 dp
+            BMR = Math.Round(BMR, 2);
+
+            return await Task.FromResult(BMR);
+            
+        }
+
+        public async Task<double> CalculateAMR(CalculateCalorieRequirementsModel model)
+        {
+            //calculate the BMR using the Mifflin St-Jeor Equation 
+            double BMR = await CalculateBMR(model);
+            double activityFactor = 0.0;
+
+
+            int userActivityLevel = AssignActivityLevel(model.ActivityLevel);
+            switch (userActivityLevel)
+            {
+                case 1:
+                    activityFactor = 1.2;
+                    break;
+                case 2:
+                    activityFactor = 1.375;
+                    break;
+                case 3:
+                    activityFactor = 1.55;
+                    break;
+                case 4:
+                    activityFactor = 1.725;
+                    break;
+                case 5:
+                    activityFactor = 1.9;
+                break;
+            }
+
+            //calculate the AMR and return it
+            double AMR = activityFactor * BMR;
+            return await Task.FromResult(AMR);
+
+        }
+
+        public async Task<double> CalculateCalorieRequirements(CalculateCalorieRequirementsModel model)
+        {
+            //method for determining calorie requirements.
+            double calorieRequirements = 0.0;
+
+            //calculate the AMR
+            double AMR = await CalculateAMR(model);
+
+            //I am using 20% for the calorie deficit/ calorie gain.
+            double difference = (20.0 / 100.0) * (AMR);
+
+            //add/subtract to the AMR based on the goal of the user.
+            if (model.Goal == GoalEnum.Gain.GetEnumDescription()) calorieRequirements = AMR + difference;
+            if (model.Goal == GoalEnum.Lose.GetEnumDescription()) calorieRequirements = AMR - difference;
+            if (model.Goal == GoalEnum.Maintain.GetEnumDescription()) calorieRequirements = AMR;
+
+
+            //return the calorie requirements
+            return await Task.FromResult(calorieRequirements);
+        }
+
+        public int AssignActivityLevel(string activityLevel)
+        {
+            //this method is for assigning activity level to be a number.
+
+
+            int userActivityLevel = 0;
+
+            if(activityLevel == ActivityLevelEnum.Sedentary.GetEnumDescription()) userActivityLevel = 1;
+            if(activityLevel == ActivityLevelEnum.LightlyActive.GetEnumDescription()) userActivityLevel = 2;
+            if(activityLevel == ActivityLevelEnum.ModeratelyActive.GetEnumDescription()) userActivityLevel = 3;
+            if(activityLevel == ActivityLevelEnum.Active.GetEnumDescription()) userActivityLevel = 4;
+            if(activityLevel == ActivityLevelEnum.VeryActive.GetEnumDescription()) userActivityLevel = 5;
+
+            return userActivityLevel;
+            
+        }
+
+        public async Task<ApiResponse> SignUpUser(SignUpModel model)
+        {
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+
+            //create the "user" role
+            await CreateRoles();
+            
+            
+            //USE AUTOMAPPER TO DO THESE PLEASE
+            ValidateModel validateModel = new ValidateModel
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                UserName = model.UserName,
+                Email = model.Email,
+                Password = model.Password,
+                ConfirmPassword = model.ConfirmPassword
+            };
+
+
+            CalculateCalorieRequirementsModel calculateCalorieRequirementsModel = new CalculateCalorieRequirementsModel
+            {
+                Age = model.Age,
+                Weight = model.Weight,
+                Height1 = model.Height1,
+                Height2 = model.Height2,
+                HeightUnit = model.HeightUnit,
+                ActivityLevel = model.ActivityLevel,
+                Goal = model.Goal,
+                Gender = model.Gender
+            };
+
+            //just for safety, validate everything again just to be sure
+            var validations = await CheckValidations(validateModel);
+            
+            
+            if(validations.Message != ApiResponseEnum.success.ToString())
+            {
+                return returnedResponse.ErrorResponse(validations.error.message, null);
+            }
+
+            //create the application user instance
+
+            ApplicationUser user = new ApplicationUser()
+            {
+                Email = model.Email,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                UserName = model.UserName,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Age = model.Age,
+                Weight = model.Weight,
+                Height = await CalculateHeight(model.Height1, model.Height2, model.HeightUnit),
+                Gender = model.Gender == GenderEnum.Male.GetEnumDescription() ? GenderEnum.Male.GetEnumDescription() : GenderEnum.Female.GetEnumDescription(),
+                ActivityLevel = AssignActivityLevel(model.ActivityLevel),
+                Goal = model.Goal,
+                CalorieRequirement = await CalculateCalorieRequirements(calculateCalorieRequirementsModel),
+
+            };
+
+            //use the user manager to create the user in the database
+            var result = await userManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
+            {
+                return returnedResponse.ErrorResponse("User Not Created", null);
+            }
+            
+            //create a user role for the user and save changes to the database
+            await userManager.AddToRoleAsync(user, UserRoles.User);
+            await _context.SaveChangesAsync();
+            return returnedResponse.CorrectResponse(user);
+
         }
     }
 }
