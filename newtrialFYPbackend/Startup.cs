@@ -89,6 +89,7 @@ namespace newtrialFYPbackend
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
