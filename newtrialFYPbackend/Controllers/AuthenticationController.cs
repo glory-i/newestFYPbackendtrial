@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using newtrialFYPbackend.Authentication;
 using newtrialFYPbackend.Responses;
 using newtrialFYPbackend.Responses.Enums;
 using newtrialFYPbackend.Services.Interface;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace newtrialFYPbackend.Controllers
@@ -124,5 +126,21 @@ namespace newtrialFYPbackend.Controllers
 
         }
 
+        [Authorize]
+        [HttpPost("UpdateAccount")]
+        public async Task<ActionResult<ApiResponse>> UpdateAccount(UpdateUserModel updateUserModel)
+        {
+
+            var response = await _authenticationServices.UpdateUser(User.Identity.Name, updateUserModel);
+            if (response.Message == ApiResponseEnum.success.ToString())
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+
+        }
     }
 }
