@@ -93,4 +93,19 @@ namespace newtrialFYPbackend.Authentication
         public DateTime Expiration { get; set; }
     }
 
+    public class UpdateUserModel
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int Age { get; set; }
+        public double Weight { get; set; }
+        public double Height1 { get; set; }
+        public double Height2 { get; set; }
+        public string HeightUnit { get; set; }
+        public string ActivityLevel { get; set; }
+        public string Goal { get; set; }
+        public string Gender { get; set; }
+    }
+
+
 }

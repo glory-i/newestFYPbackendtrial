@@ -689,5 +689,50 @@ namespace newtrialFYPbackend.Services.Implementation
 
 
         }
+
+        public async Task<ApiResponse> UpdateUser(string username, UpdateUserModel model)
+        {
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+
+            //check if there is any user with that email or username
+            var user = await userManager.FindByNameAsync(username) ?? await userManager.FindByEmailAsync(username);
+
+            //if user does not exist, return an error response
+            if (user == null) return returnedResponse.ErrorResponse("No User exists with that Username or Email", null);
+
+
+            //automapper which will be used for calculating the calorie requirements
+            var mapper = new Mapper(MapperConfig.GetMapperConfiguration());
+            var calculateCalorieRequirementsModel = mapper.Map<CalculateCalorieRequirementsModel>(model);
+
+
+
+            try
+            {
+                // update the values of the user
+                user.FirstName = model.FirstName;
+                user.LastName = model.LastName;
+                user.Age = model.Age;
+                user.Weight = model.Weight;
+                user.Height = await CalculateHeight(model.Height1, model.Height2, model.HeightUnit);
+                user.Gender = model.Gender == GenderEnum.Male.GetEnumDescription() ? GenderEnum.Male.GetEnumDescription() : GenderEnum.Female.GetEnumDescription();
+                user.ActivityLevel = AssignActivityLevel(model.ActivityLevel);
+                user.Goal = model.Goal;
+                user.CalorieRequirement = await CalculateCalorieRequirements(calculateCalorieRequirementsModel);
+
+                await userManager.UpdateAsync(user);
+                await _context.SaveChangesAsync();
+
+                return returnedResponse.CorrectResponse(user);
+
+            }
+
+            catch (Exception myEx)
+            {
+                return returnedResponse.ErrorResponse(myEx.Message, null);
+            }
+            
+
+        }
     }
 }

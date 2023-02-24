@@ -12,6 +12,7 @@ namespace newtrialFYPbackend.Authentication
                 cfg.CreateMap<SignUpModel, CalculateCalorieRequirementsModel>();
                 cfg.CreateMap<ApplicationUser, LoginResponseModel>();
                 cfg.CreateMap<AuthorizationToken, LoginResponseModel>();
+                cfg.CreateMap<UpdateUserModel, CalculateCalorieRequirementsModel>();
             }
                    );
             return config;
