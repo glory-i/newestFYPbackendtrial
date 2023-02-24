@@ -15,6 +15,11 @@ using newtrialFYPbackend.Model;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using AutoMapper;
 
 namespace newtrialFYPbackend.Services.Implementation
 {
@@ -527,10 +532,14 @@ namespace newtrialFYPbackend.Services.Implementation
 
             //create the "user" role
             await CreateRoles();
-            
-            
+
+            var mapper = new Mapper(MapperConfig.GetMapperConfiguration());
+            var validateModel = mapper.Map<ValidateModel>(model);
+            var calculateCalorieRequirementsModel = mapper.Map<CalculateCalorieRequirementsModel>(model);
+
+
             //USE AUTOMAPPER TO DO THESE PLEASE
-            ValidateModel validateModel = new ValidateModel
+            /*ValidateModel validateModel = new ValidateModel
             {
                 FirstName = model.FirstName,
                 LastName = model.LastName,
@@ -539,9 +548,10 @@ namespace newtrialFYPbackend.Services.Implementation
                 Password = model.Password,
                 ConfirmPassword = model.ConfirmPassword
             };
+            */
 
 
-            CalculateCalorieRequirementsModel calculateCalorieRequirementsModel = new CalculateCalorieRequirementsModel
+            /*CalculateCalorieRequirementsModel calculateCalorieRequirementsModel = new CalculateCalorieRequirementsModel
             {
                 Age = model.Age,
                 Weight = model.Weight,
@@ -552,6 +562,8 @@ namespace newtrialFYPbackend.Services.Implementation
                 Goal = model.Goal,
                 Gender = model.Gender
             };
+            */
+
 
             //just for safety, validate everything again just to be sure
             var validations = await CheckValidations(validateModel);
@@ -592,6 +604,89 @@ namespace newtrialFYPbackend.Services.Implementation
             await userManager.AddToRoleAsync(user, UserRoles.User);
             await _context.SaveChangesAsync();
             return returnedResponse.CorrectResponse(user);
+
+        }
+
+        public async Task<ApiResponse> Login(LoginModel model)
+        {
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+
+            //check if there is any user with that email or username
+            var user = await userManager.FindByNameAsync(model.UsernameOrEmail) ?? await userManager.FindByEmailAsync(model.UsernameOrEmail);
+
+            //if user does not exist, return an error response
+            if (user == null) return returnedResponse.ErrorResponse("No User exists with that Username or Email", null);
+
+            
+            //check if the password used is correct
+            bool correctPassword = await userManager.CheckPasswordAsync(user, model.Password);
+            
+            //if password is incorrect, return an error response
+            if(!correctPassword) return returnedResponse.ErrorResponse("Incorrect Login Details", null);
+
+
+
+
+            //if the user is not null and the password is correct, assign roles and claims to the user
+
+            try
+            {
+                var userRoles = await userManager.GetRolesAsync(user);
+
+                var authClaims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name,user.UserName),
+                    new Claim(ClaimTypes.Email,user.Email),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                };
+
+                foreach (var userRole in userRoles)
+                {
+                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                }
+
+
+                //generate the JSON Web Token for the User
+                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["JWT:ValidIssuer"],
+                    audience: _configuration["JWT:ValidAudience"],
+                    expires: DateTime.Now.AddHours(3),
+                    claims: authClaims,
+                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+                );
+
+
+                //create the Token Object for the JSON Web Token
+                AuthorizationToken authorizationToken = new AuthorizationToken
+                {
+                    Token = new JwtSecurityTokenHandler().WriteToken(token),
+                    Expiration = token.ValidTo,
+                    TokenUser = user.UserName
+                };
+
+
+                //use automapper to return all the user's information, along with their generated JWT
+                var mapper = new Mapper(MapperConfig.GetMapperConfiguration());
+
+
+                var loginResponseModel = mapper.Map<LoginResponseModel>(user);
+                loginResponseModel.Token = new JwtSecurityTokenHandler().WriteToken(token);
+                loginResponseModel.Expiration = token.ValidTo;
+                loginResponseModel.TokenUser = user.UserName;
+
+
+                return returnedResponse.CorrectResponse(loginResponseModel);
+
+            }
+
+            catch(Exception myEx)
+            {
+                return returnedResponse.ErrorResponse(myEx.Message, null);
+            }
+
+
+
 
         }
     }

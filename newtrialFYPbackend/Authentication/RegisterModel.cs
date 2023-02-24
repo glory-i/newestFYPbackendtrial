@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace newtrialFYPbackend.Authentication
 {
@@ -65,6 +66,31 @@ namespace newtrialFYPbackend.Authentication
         public string ActivityLevel { get; set; }
         public string Goal { get; set; }
         public string Gender { get; set; }
+    }
+
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "Username OR Email is required")]
+        public string UsernameOrEmail { get; set; }
+
+
+        [Required(ErrorMessage = "Paasword is required")]
+        public string Password { get; set; }
+    }
+
+    public class AuthorizationToken
+    {
+        public string Token { get; set; }
+        public string TokenUser { get; set; }
+        public DateTime Expiration { get; set; }
+    }
+
+    public class LoginResponseModel : ApplicationUser
+    {
+        public string Token { get; set; }
+        public string TokenUser { get; set; }
+        public DateTime Expiration { get; set; }
     }
 
 }
