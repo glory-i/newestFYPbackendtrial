@@ -8,6 +8,7 @@ namespace newtrialFYPbackend.Services.Interface
     {
         public  Task<ApiResponse> RegisterUser(ValidateModel model);
         public  Task<ApiResponse> SignUpUser(SignUpModel model);
+        public  Task<ApiResponse> Login(LoginModel model);
         public  Task<ApiResponse> CheckValidations(ValidateModel model);
         public  ApiResponse ValidatePassword(string password);
 
@@ -15,9 +16,13 @@ namespace newtrialFYPbackend.Services.Interface
         public  Task<bool> ValidateEmail(string email);
         public  bool ValidateEmailRegExp(string email);
 
+
+
         public Task<ApiResponse> CreateOTP(string username, string email);
         public Task<ApiResponse> SendOTP(string username, string email);
         public Task<ApiResponse> ValidateOTP(int inputPin, string username, string email);
+
+
 
 
 

@@ -50,6 +50,22 @@ namespace newtrialFYPbackend.Controllers
 
         }
 
+        [HttpPost("Login")]
+        public async Task<ActionResult<ApiResponse>> Login(LoginModel loginModel)
+        {
+
+            var response = await _authenticationServices.Login(loginModel);
+            if (response.Message == ApiResponseEnum.success.ToString())
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+
+        }
+
         [HttpPost("Validate")]
         public async Task<ActionResult<ApiResponse>> CheckValidations(ValidateModel registerModel)
         {
