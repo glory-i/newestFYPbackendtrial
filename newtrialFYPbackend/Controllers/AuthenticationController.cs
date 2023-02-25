@@ -116,6 +116,73 @@ namespace newtrialFYPbackend.Controllers
 
         }
 
+        [HttpPost("ValidateUserExists")]
+        public async Task<ActionResult<ApiResponse>> ValidateUserExists(string email)
+        {
+
+            var response = await _authenticationServices.ValidateUserExists(email);
+            if (response.Message == ApiResponseEnum.success.ToString())
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+
+        }
+
+        
+        [HttpPost("ForgotPassword")]
+        public async Task<ActionResult<ApiResponse>> ForgotPassword(string email, string newPassword, string confirmPassword)
+        {
+
+            var response = await _authenticationServices.ForgotPassword(email, newPassword, confirmPassword);
+            if (response.Message == ApiResponseEnum.success.ToString())
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+
+        }
+
+        [Authorize]
+        [HttpPost("ChangePassword")]
+        public async Task<ActionResult<ApiResponse>> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+        {
+
+            var response = await _authenticationServices.ChangePassword(User.Identity.Name, currentPassword, newPassword, confirmPassword);
+            if (response.Message == ApiResponseEnum.success.ToString())
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+
+        }
+
+        [Authorize]
+        [HttpGet("ViewUser")]
+        public async Task<ActionResult<ApiResponse>> ViewUser()
+        {
+
+            var response = await _authenticationServices.ViewUser(User.Identity.Name);
+            if (response.Message == ApiResponseEnum.success.ToString())
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+
+        }
+
 
         [HttpPost("CalculateCalorieRequirements")]
         public async Task<ActionResult<ApiResponse>> CalculateRequirements(CalculateCalorieRequirementsModel model)
