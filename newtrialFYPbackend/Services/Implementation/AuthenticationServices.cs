@@ -734,5 +734,116 @@ namespace newtrialFYPbackend.Services.Implementation
             
 
         }
+
+        public async Task<ApiResponse> ValidateUserExists(string email)
+        {
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+
+            //check if there is any user with that email or username
+            var user = await userManager.FindByNameAsync(email) ?? await userManager.FindByEmailAsync(email);
+
+            //if user does not exist, return an error response
+            if (user == null)
+            {
+                return returnedResponse.ErrorResponse("No User exists with that Username or Email", null);
+            }
+
+            else
+            {
+                return returnedResponse.CorrectResponse(user);
+            }
+            
+            
+            
+        }
+
+        public async Task<ApiResponse> ForgotPassword(string email, string newPassword, string confirmPassword)
+        {
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+
+            // check if there is any user with that email or username
+            var user = await userManager.FindByNameAsync(email) ?? await userManager.FindByEmailAsync(email);
+            
+            //if user does not exist, return an error response
+            if (user == null)
+            {
+                return returnedResponse.ErrorResponse("No User exists with that Username or Email", null);
+            }
+            
+            
+            //ensure that the new password to be set is valid using regexp
+            var validPassword = ValidatePassword(newPassword);
+            if (validPassword.Message == ApiResponseEnum.failure.ToString())
+            {
+                return returnedResponse.ErrorResponse(validPassword.error.message, null);
+            }
+
+
+            //ensure that the password and confirm passwords match
+            if (newPassword != confirmPassword) 
+            {
+                return returnedResponse.ErrorResponse("Password and Confirm Password do not match", null);
+            } 
+
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await userManager.ResetPasswordAsync(user, token, newPassword);
+
+            if (result.Succeeded)
+            {
+                return returnedResponse.CorrectResponse("Successfully changed Passwords");
+            }
+            return returnedResponse.ErrorResponse(result.Errors.ToString(), null);
+
+
+        }
+
+        public async Task<ApiResponse> ChangePassword(string username, string currentPassword, string newPassword, string confirmPassword)
+        {
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+
+            // check if there is any user with that email or username
+            var user = await userManager.FindByNameAsync(username) ?? await userManager.FindByEmailAsync(username);
+
+            //if user does not exist, return an error response
+            if (user == null)
+            {
+                return returnedResponse.ErrorResponse("No User exists with that Username or Email", null);
+            }
+            
+
+            //check if the password used is correct
+            bool correctPassword = await userManager.CheckPasswordAsync(user, currentPassword);
+
+            //if password is incorrect, return an error response
+            if (!correctPassword) return returnedResponse.ErrorResponse("Incorrect Password", null);
+
+            var changePassword = await ForgotPassword(username, newPassword, confirmPassword);
+            
+            if(changePassword.Message == ApiResponseEnum.failure.ToString())
+            {
+                return returnedResponse.ErrorResponse(changePassword.error.message, null);
+            }
+
+            return returnedResponse.CorrectResponse("Successfully changed Password");
+
+
+        }
+
+        public async Task<ApiResponse> ViewUser(string username)
+        {
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+
+            // check if there is any user with that email or username
+            var user = await userManager.FindByNameAsync(username) ?? await userManager.FindByEmailAsync(username);
+
+            //if user does not exist, return an error response
+            if (user == null)
+            {
+                return returnedResponse.ErrorResponse("No User exists with that Username or Email", null);
+            }
+
+            return returnedResponse.CorrectResponse(user);
+        }
     }
 }
