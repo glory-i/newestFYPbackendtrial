@@ -177,14 +177,7 @@ namespace newtrialFYPbackend.Services.Implementation
             }
 
 
-            ApplicationUser user = new ApplicationUser()
-            {
-                Email = model.Email,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.UserName
-            };
-
-            return returnedResponse.CorrectResponse(user);
+            return returnedResponse.CorrectResponse("Valid Details");
 
         }
 
