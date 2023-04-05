@@ -30,7 +30,7 @@ namespace newtrialFYPbackend.Services.Interface
 
 
 
-        public Task<double> CalculateHeight(double h1, double h2, string unit);
+        public Task<double> CalculateHeight(double feet, double inches);
         public Task<double> CalculateBMR(CalculateCalorieRequirementsModel model);
         public Task<double> CalculateAMR(CalculateCalorieRequirementsModel model);
         public Task<double> CalculateCalorieRequirements(CalculateCalorieRequirementsModel model);

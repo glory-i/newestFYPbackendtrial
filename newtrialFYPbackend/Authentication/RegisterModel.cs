@@ -10,11 +10,11 @@ namespace newtrialFYPbackend.Authentication
         public string LastName { get; set; }
 
 
-        [Required(ErrorMessage = "USERNAME IS REQUIRED")]
+        //[Required(ErrorMessage = "USERNAME IS REQUIRED")]
         public string UserName { get; set; }
 
 
-        [Required(ErrorMessage = "EMAIL IS REQUIRED")]
+        //[Required(ErrorMessage = "EMAIL IS REQUIRED")]
         public string Email { get; set; }
 
 
@@ -47,9 +47,9 @@ namespace newtrialFYPbackend.Authentication
         public int Age { get; set; }
         public string Gender { get; set; }
         public double Weight { get; set; }
-        public double Height1 { get; set; }
-        public double Height2 { get; set; }
-        public string HeightUnit { get; set; }
+        public double HeightInFeet { get; set; }
+        public double HeightInInches { get; set; }
+        //public string HeightUnit { get; set; }
         public string ActivityLevel { get; set; }
         public string Goal { get; set; }
 
@@ -60,9 +60,9 @@ namespace newtrialFYPbackend.Authentication
     {
         public int Age { get; set; }
         public double Weight { get; set; }
-        public double Height1 { get; set; }
-        public double Height2 { get; set; }
-        public string HeightUnit { get; set; }
+        public double HeightInFeet { get; set; }
+        public double HeightInInches { get; set; }
+        //public string HeightUnit { get; set; }
         public string ActivityLevel { get; set; }
         public string Goal { get; set; }
         public string Gender { get; set; }
@@ -71,11 +71,11 @@ namespace newtrialFYPbackend.Authentication
 
     public class LoginModel
     {
-        [Required(ErrorMessage = "Username OR Email is required")]
+        //[Required(ErrorMessage = "Username OR Email is required")]
         public string UsernameOrEmail { get; set; }
 
 
-        [Required(ErrorMessage = "Paasword is required")]
+        //[Required(ErrorMessage = "Paasword is required")]
         public string Password { get; set; }
     }
 
@@ -95,16 +95,16 @@ namespace newtrialFYPbackend.Authentication
 
     public class UpdateUserModel
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+       // public string FirstName { get; set; }
+       // public string LastName { get; set; }
         public int Age { get; set; }
         public double Weight { get; set; }
-        public double Height1 { get; set; }
-        public double Height2 { get; set; }
-        public string HeightUnit { get; set; }
+        public double HeightInFeet { get; set; }
+        public double HeightInInches { get; set; }
+        //public string HeightUnit { get; set; }
         public string ActivityLevel { get; set; }
         public string Goal { get; set; }
-        public string Gender { get; set; }
+        //public string Gender { get; set; }
     }
 
 

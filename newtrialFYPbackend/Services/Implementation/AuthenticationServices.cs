@@ -141,6 +141,18 @@ namespace newtrialFYPbackend.Services.Implementation
             //create the "user" role
             await CreateRoles();
 
+            if (String.IsNullOrEmpty(model.UserName))
+            {
+                return returnedResponse.ErrorResponse("Username cannot be empty", null);
+
+            }
+
+            if (String.IsNullOrEmpty(model.Email))
+            {
+                return returnedResponse.ErrorResponse("Email cannot be empty", null);
+
+            }
+
             //ensure that the email is valid using regular expressions.
             var validateEmail = ValidateEmailRegExp(model.Email);
             if (!validateEmail)
@@ -283,7 +295,7 @@ namespace newtrialFYPbackend.Services.Implementation
             try
             {
                 Random random = new Random();
-                int pin = random.Next(100000, 1000000);
+                int pin = random.Next(10000, 99999);
 
                 var newOTP = new OTP
                 {
@@ -396,7 +408,7 @@ namespace newtrialFYPbackend.Services.Implementation
             return returnedResponse.ErrorResponse("Invalid OTP", null);
         }
 
-        public async Task<double> CalculateHeight(double h1, double h2, string unit)
+        public async Task<double> CalculateHeight(double feet, double inches)
         {
             //this method is to get the height in cm.
 
@@ -407,18 +419,11 @@ namespace newtrialFYPbackend.Services.Implementation
             double metersToCm = 100.0;
 
             //IF height given in feet and inches, convert everything to inches first, then convert to cm by multiplying by 2.54
-            if(unit == HeightUnitEnum.feet.ToString())
-            {
-                double heightInInches = (h1 * feetToInches) + h2;
-                height = heightInInches * inchesToCm;
-            }
-
-            //IF height given in meters and cm,just convert to cm
-            else if (unit == HeightUnitEnum.meters.ToString())
-            {
-                height = (h1 * metersToCm) + h2;
-            }
-
+            double heightInInches = (feet * feetToInches) + inches;
+            height = heightInInches * inchesToCm;
+            
+            height = Math.Round(height, 2);
+            
             return await Task.FromResult(height);
         }
 
@@ -427,7 +432,7 @@ namespace newtrialFYPbackend.Services.Implementation
             //this method is to calculate BMR using the Mifflin St-Jeor Equation.
 
             //firstly get the height in cm
-            double heightInCm = await CalculateHeight(model.Height1, model.Height2, model.HeightUnit);
+            double heightInCm = await CalculateHeight(model.HeightInFeet, model.HeightInInches);
 
 
             //the Mifflin St-Jeor formula is the same for males and females and only differs by the constant added at the end
@@ -497,6 +502,7 @@ namespace newtrialFYPbackend.Services.Implementation
             if (model.Goal == GoalEnum.Lose.GetEnumDescription()) calorieRequirements = AMR - difference;
             if (model.Goal == GoalEnum.Maintain.GetEnumDescription()) calorieRequirements = AMR;
 
+            calorieRequirements = Math.Round(calorieRequirements, 2);
 
             //return the calorie requirements
             return await Task.FromResult(calorieRequirements);
@@ -578,9 +584,12 @@ namespace newtrialFYPbackend.Services.Implementation
                 LastName = model.LastName,
                 Age = model.Age,
                 Weight = model.Weight,
-                Height = await CalculateHeight(model.Height1, model.Height2, model.HeightUnit),
+                HeightInCm = await CalculateHeight(model.HeightInFeet, model.HeightInInches),
+                HeightInFeet = model.HeightInFeet,
+                HeightInInches = model.HeightInInches,
                 Gender = model.Gender == GenderEnum.Male.GetEnumDescription() ? GenderEnum.Male.GetEnumDescription() : GenderEnum.Female.GetEnumDescription(),
                 ActivityLevel = AssignActivityLevel(model.ActivityLevel),
+                userActivityLevel = model.ActivityLevel,
                 Goal = model.Goal,
                 CalorieRequirement = await CalculateCalorieRequirements(calculateCalorieRequirementsModel),
 
@@ -603,6 +612,13 @@ namespace newtrialFYPbackend.Services.Implementation
         public async Task<ApiResponse> Login(LoginModel model)
         {
             ReturnedResponse returnedResponse = new ReturnedResponse();
+
+            if (String.IsNullOrEmpty(model.UsernameOrEmail))
+            {
+                return returnedResponse.ErrorResponse("Username cannot be empty", null);
+
+            }
+
 
             //check if there is any user with that email or username
             var user = await userManager.FindByNameAsync(model.UsernameOrEmail) ?? await userManager.FindByEmailAsync(model.UsernameOrEmail);
@@ -703,13 +719,16 @@ namespace newtrialFYPbackend.Services.Implementation
             try
             {
                 // update the values of the user
-                user.FirstName = model.FirstName;
-                user.LastName = model.LastName;
+                //user.FirstName = model.FirstName;
+                //user.LastName = model.LastName;
                 user.Age = model.Age;
                 user.Weight = model.Weight;
-                user.Height = await CalculateHeight(model.Height1, model.Height2, model.HeightUnit);
-                user.Gender = model.Gender == GenderEnum.Male.GetEnumDescription() ? GenderEnum.Male.GetEnumDescription() : GenderEnum.Female.GetEnumDescription();
+                user.HeightInCm = await CalculateHeight(model.HeightInFeet, model.HeightInInches);
+                user.HeightInFeet = model.HeightInFeet;
+                user.HeightInInches = model.HeightInInches;
+                //user.Gender = model.Gender == GenderEnum.Male.GetEnumDescription() ? GenderEnum.Male.GetEnumDescription() : GenderEnum.Female.GetEnumDescription();
                 user.ActivityLevel = AssignActivityLevel(model.ActivityLevel);
+                user.userActivityLevel = model.ActivityLevel;
                 user.Goal = model.Goal;
                 user.CalorieRequirement = await CalculateCalorieRequirements(calculateCalorieRequirementsModel);
 
