@@ -24,10 +24,10 @@ namespace newtrialFYPbackend.Responses.Enums
 
     public enum ActivityLevelEnum
     {
-        [Description("Little or no exercise weekly")] Sedentary = 1,
-        [Description("Light exercise 1-3 days per week")] LightlyActive = 2,
-        [Description("Moderate exercise 6/7 days per week")] ModeratelyActive = 3,
-        [Description("Hard exercise every day in a week")] Active = 4,
-        [Description("Hard exercise two or more times per day")] VeryActive = 5,
+        [Description("Sedentary")] Sedentary = 1,
+        [Description("Lightly Active")] LightlyActive = 2,
+        [Description("Moderately Active")] ModeratelyActive = 3,
+        [Description("Active")] Active = 4,
+        [Description("Very Active")] VeryActive = 5,
     }
 }
