@@ -36,7 +36,10 @@ namespace newtrialFYPbackend
         {
 
             services.AddControllers();
+
             services.AddTransient<IAuthenticationServices, AuthenticationServices>();
+            services.AddTransient<INutritionServices, NutritionServices>();
+
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("ConnStr")));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()

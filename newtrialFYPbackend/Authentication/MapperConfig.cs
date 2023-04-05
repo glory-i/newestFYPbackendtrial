@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using newtrialFYPbackend.Model.NutritionModels;
 
 namespace newtrialFYPbackend.Authentication
 {
@@ -13,6 +14,10 @@ namespace newtrialFYPbackend.Authentication
                 cfg.CreateMap<ApplicationUser, LoginResponseModel>();
                 cfg.CreateMap<AuthorizationToken, LoginResponseModel>();
                 cfg.CreateMap<UpdateUserModel, CalculateCalorieRequirementsModel>();
+
+
+                //CREATES A MAP FROM nutritionrequestmodel to Calulcate calorie rewuirements model. It will return an instance of calculate calorie requirements model
+                cfg.CreateMap<NutritionCalculatorRequestModel, CalculateCalorieRequirementsModel>();
             }
                    );
             return config;
