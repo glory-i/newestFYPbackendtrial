@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using newtrialFYPbackend.DTOs.MealDTOs;
+using newtrialFYPbackend.Model;
 using newtrialFYPbackend.Model.NutritionModels;
 
 namespace newtrialFYPbackend.Authentication
@@ -18,6 +20,7 @@ namespace newtrialFYPbackend.Authentication
 
                 //CREATES A MAP FROM nutritionrequestmodel to Calulcate calorie rewuirements model. It will return an instance of calculate calorie requirements model
                 cfg.CreateMap<NutritionCalculatorRequestModel, CalculateCalorieRequirementsModel>();
+                cfg.CreateMap<createMealDTO, Meal>();
             }
                    );
             return config;

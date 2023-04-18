@@ -30,4 +30,21 @@ namespace newtrialFYPbackend.Responses.Enums
         [Description("Active")] Active = 4,
         [Description("Very Active")] VeryActive = 5,
     }
+
+
+
+
+    public enum FoodTypeEnum
+    {
+        [Description("Breakfast")] Breakfast = 1,
+        [Description("Lunch")] Lunch = 2,
+        [Description("Dinner")] Dinner = 3,
+        [Description("Breakfast Lunch")] BreakfastLunch = 4,
+        [Description("Breakfast Dinner")] BreakfastDinner = 5,
+        [Description("Lunch Dinner")] LunchDinner = 6,
+        [Description("Breakfast Lunch Dinner")] BreakfastLunchDinner = 7,
+
+
+
+    }
 }

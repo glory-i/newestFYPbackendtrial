@@ -21,9 +21,10 @@
         public static double maxPercentCaloriesFromFats = 40.0;
 
 
+    }
 
-
-
-
+    public static class ImageConstants
+    {
+        public static string jpgImageData = "data:image/jpg;base64,";
     }
 }
