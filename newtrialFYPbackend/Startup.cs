@@ -12,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using newtrialFYPbackend.Authentication;
+using newtrialFYPbackend.Repository.Implementation;
+using newtrialFYPbackend.Repository.Interface;
 using newtrialFYPbackend.Services.Implementation;
 using newtrialFYPbackend.Services.Interface;
 using System;
@@ -39,6 +41,10 @@ namespace newtrialFYPbackend
 
             services.AddTransient<IAuthenticationServices, AuthenticationServices>();
             services.AddTransient<INutritionServices, NutritionServices>();
+            services.AddTransient<IMealServices, MealServices>();
+            
+            
+            services.AddTransient<IMealRepository, MealRepository>();
 
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("ConnStr")));
 

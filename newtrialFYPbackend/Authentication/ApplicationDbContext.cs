@@ -17,6 +17,7 @@ namespace newtrialFYPbackend.Authentication
         }
 
         public DbSet<OTP> OTPs { get; set; }
+        public DbSet<Meal> Meals { get; set; }
 
 
     }
